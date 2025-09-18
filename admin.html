@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FixCode Panel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #ff0050;
+      padding: 12px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      background: #222;
+      padding: 10px;
+      gap: 15px;
+    }
+    nav button {
+      background: #444;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    nav button:hover {
+      background: #ff0050;
+    }
+    .tab-content {
+      display: none;
+      padding: 20px;
+      animation: fadeIn 0.5s;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    /* Fix Code */
+    .code-box {
+      width: 100%;
+      height: 200px;
+      background: #111;
+      color: #0f0;
+      border-radius: 8px;
+      padding: 10px;
+      font-family: monospace;
+      resize: none;
+      outline: none;
+      border: 2px solid #ff0050;
+    }
+    .run-btn {
+      margin-top: 10px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #ff0050;
+      color: #fff;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .run-btn:hover {
+      opacity: 0.8;
+    }
+
+    /* Account */
+    .account-box {
+      background: #111;
+      padding: 15px;
+      border-radius: 12px;
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0 0 12px rgba(255,0,90,0.6);
+    }
+    .account-box input {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 6px;
+      outline: none;
+    }
+    .account-box button {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .btn-2fa {background: #ff0050; color: #fff;}
+    .btn-cache {background: #0099ff; color: #fff;}
+    .btn-protect {background: #00cc66; color: #fff;}
+    .btn-2fa:hover, .btn-cache:hover, .btn-protect:hover {opacity: 0.8;}
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #222;
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      display: none;
+      animation: fadeInUp 0.5s;
+    }
+    @keyframes fadeInUp {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+  </style>
+</head>
+<body>
+  <header>⚡ FixCode Panel</header>
+  <nav>
+    <button onclick="openTab('dashboard')">Dashboard</button>
+    <button onclick="openTab('fixcode')">Fix Code</button>
+    <button onclick="openTab('account')">Account</button>
+  </nav>
+
+  <!-- Dashboard -->
+  <div id="dashboard" class="tab-content active">
+    <h2>🎉 Welcome!</h2>
+    <p>Đây là FixCode Panel  🚀</p>
+  </div>
+
+  <!-- Fix Code -->
+  <div id="fixcode" class="tab-content">
+    <h2>🛠️ Fix Code</h2>
+    <textarea class="code-box" id="codeArea">// Viết code ở đây...</textarea>
+    <br>
+    <button class="run-btn" onclick="runCode()">▶️ Chạy Code</button>
+    <pre id="output"></pre>
+  </div>
+
+  <!-- Account -->
+  <div id="account" class="tab-content">
+    <h2>👤 Account</h2>
+    <div class="account-box">
+      <input type="text" id="username" placeholder="Nhập username...">
+      <button class="btn-2fa" onclick="enable2FA()">🔐 Bật bảo mật 2 bước</button>
+      <button class="btn-cache" onclick="clearCache()">🧹 Xoá cache</button>
+      <hr style="margin:15px 0; border:1px solid #333;">
+      <h3>🛡️ Bảo vệ TikTok</h3>
+      <button class="btn-protect" onclick="protect('hack')">🔒 Chặn hack follow ảo</button>
+      <button class="btn-protect" onclick="protect('report')">🛡️ Chống bị report spam</button>
+      <button class="btn-protect" onclick="protect('loss')">🚫 Ngăn chặn mất nick</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // Tab Switching
+    function openTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    // Run Code
+    function runCode() {
+      const code = document.getElementById("codeArea").value;
+      try {
+        const result = eval(code);
+        document.getElementById("output").textContent = result ?? "Đã chạy code!";
+        showToast("✅ Code đã chạy thành công!");
+      } catch (err) {
+        document.getElementById("output").textContent = err;
+        showToast("❌ Lỗi code!");
+      }
+    }
+
+    // Account
+    function enable2FA() {
+      showToast("🔐 Bảo mật 2 bước đã bật!");
+    }
+    function clearCache() {
+      localStorage.clear();
+      showToast("🧹 Cache đã xoá!");
+    }
+
+    // Protect TikTok
+    function protect(type) {
+      let msg = "";
+      if(type === "hack") msg = "🔒 Đã kích hoạt chặn hack follow ảo!";
+      if(type === "report") msg = "🛡️ Đã bật chống bị report spam!";
+      if(type === "loss") msg = "🚫 Đã bật bảo vệ tránh mất nick!";
+      showToast(msg);
+    }
+
+    // Toast
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.style.display = "block";
+      setTimeout(() => { toast.style.display = "none"; }, 3000);
+    }
+  </script>
+</body>
+</html>
